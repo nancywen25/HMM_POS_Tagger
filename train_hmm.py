@@ -30,13 +30,13 @@ def read_data(fname):
 
     return lines, tag_idx, word_idx
 
-def get_transition_probs(lines, tag_idx):
+def get_transition_probs(lines, tag_idx, smoothing=False):
     """
 
     Args:
         lines: list of [word, tag] pairs in training data
         tag_idx: dict with mapping from tag to index
-
+        smoothing: flag to use Laplace smoothing
     Returns:
         start_prob: 1D numpy array representing probability
                     of a sentence starting with a particular tag
@@ -60,18 +60,22 @@ def get_transition_probs(lines, tag_idx):
             A[tag_idx[prev_tag]][tag_idx[tag]] += 1
             prev_tag = tag
 
-    start_prob = start_prob/start_prob.sum()
-    A = A/A.sum(axis=1)[:, None]
+    if smoothing:
+        start_prob = (start_prob + 1) / (start_prob.sum() + len(tag_idx))
+        A = (A + 1) / (A.sum(axis=1) + len(tag_idx))[:, None]
+    else:
+        start_prob = start_prob / start_prob.sum()
+        A = A / A.sum(axis=1)[:, None]
     return start_prob, A
 
-def get_emission_probs(lines, tag_idx, word_idx):
+def get_emission_probs(lines, tag_idx, word_idx, smoothing=False):
     """
 
     Args:
         lines: list of [word, tag] pairs in training data
         tag_idx: dict with mapping from tag to index
         word_idx: dict with mapping from word to index
-
+        smoothing: flag to use Laplace smoothing
     Returns:
         B: 2D array representing emission probability
             from tag to word
@@ -82,7 +86,10 @@ def get_emission_probs(lines, tag_idx, word_idx):
         if len(line) == 2:
             word, tag = line[0], line[1]
             B[tag_idx[tag]][word_idx[word]] += 1 # increment emission count for tag, word pair
-    B = B/B.sum(axis=1)[:, None]
+    if smoothing:
+        B = (B + 1)/(B.sum(axis=1) + len(word_idx))[:, None]
+    else:
+        B = B/B.sum(axis=1)[:, None]
     return B
 
 def main():
