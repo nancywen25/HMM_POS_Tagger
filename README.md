@@ -11,7 +11,7 @@ Trained on tagged Wall Street Journal corpus (WSJ_02-21.pos) and achieves 94.5% 
 
 #### Tag an input file
 ```
-python run_hmm.py -i test_input.words -o test_output.pos
+python run_hmm.py -i test_input.words -o output/test_output.pos
 ```
 
 #### Tag an input file and get an accuracy score
