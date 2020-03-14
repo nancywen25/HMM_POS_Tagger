@@ -1,14 +1,14 @@
-import itertools
 import numpy as np
-from train_hmm import read_data, get_transition_probs, get_emission_probs
 
-def lookup_emission_prob(word, tag_idx, word_idx, state=None):
+def lookup_emission_prob(word, tag_idx, word_idx, B, state=None):
     """
 
     Args:
         word: word to lookup
         tag_idx: dict with mapping from tag to index
         word_idx: dict with mapping from word in index
+        B: 2D array representing emission probability
+            from tag to word
         state: index of state, default None to get probs for all states
     Returns:
         float: emission probability of one state
@@ -51,13 +51,13 @@ def run_viterbi(obs_seq, tag_idx, word_idx, start_prob, A, B):
 
 
     # initialization step
-    viterbi[:, 0] = start_prob * lookup_emission_prob(obs_seq[0], tag_idx, word_idx)
+    viterbi[:, 0] = start_prob * lookup_emission_prob(obs_seq[0], tag_idx, word_idx, B)
 
     # recursion step
     for t in range(1, len(obs_seq)): # loop through each token in sentence
         for s in range(len(tag_idx)): # loop through all states
-            viterbi[s, t] = np.max(viterbi[:, t - 1] * A[:, s] * lookup_emission_prob(obs_seq[t], tag_idx, word_idx, s))
-            backpointer[s, t] = np.argmax(viterbi[:, t - 1] * A[:, s] * lookup_emission_prob(obs_seq[t], tag_idx, word_idx, s))
+            viterbi[s, t] = np.max(viterbi[:, t - 1] * A[:, s] * lookup_emission_prob(obs_seq[t], tag_idx, word_idx, B, s))
+            backpointer[s, t] = np.argmax(viterbi[:, t - 1] * A[:, s] * lookup_emission_prob(obs_seq[t], tag_idx, word_idx, B, s))
     # termination step
     best_path_prob = np.max(viterbi[:, -1])
     best_path_pointer = np.argmax(viterbi[:, -1])
@@ -84,20 +84,5 @@ def print_prediction(obs_seq, tag_idx, best_path):
     for i, e in enumerate(obs_seq):
         print('\t'.join([e, tag_dict[best_path[i]]]))
 
-training_fname = "WSJ_POS_CORPUS_FOR_STUDENTS/WSJ_02-21.pos"
-lines, tag_idx, word_idx = read_data(training_fname)
-start_prob, A = get_transition_probs(lines, tag_idx)
-B = get_emission_probs(lines, tag_idx, word_idx)
-
-develop_fname = "WSJ_POS_CORPUS_FOR_STUDENTS/WSJ_24.words"
-with open(develop_fname) as f:
-    lines = [line.strip() for line in f]
-
-# split the list into lists of sentences
-sentences = [list(v) for k, v in itertools.groupby(lines, key=bool) if k]
-
-obs_seq = sentences[0]
-best_path, bestpath_prob = run_viterbi(obs_seq, tag_idx, word_idx, start_prob, A, B)
-print_prediction(obs_seq, tag_idx, best_path)
 
 
