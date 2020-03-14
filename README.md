@@ -6,7 +6,7 @@ Trained on tagged Wall Street Journal corpus (WSJ_02-21.pos) and achieves 94.5% 
 
 ## Example
  - input file needs to contain one word per line e.g. [test_input.words](https://github.com/nancywen25/HMM_POS_Tagger/blob/master/test_input.words)
- - output file will contain a tab-separated word and POS tag per line
+ - output file will contain a tab-separated word and POS tag per line e.g. [test_output.pos](https://github.com/nancywen25/HMM_POS_Tagger/blob/master/output/test_output.pos)
  - If a truth file is provided, an accuracy score will be printed
 
 #### Tag an input file
