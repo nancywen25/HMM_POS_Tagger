@@ -69,20 +69,5 @@ def run_viterbi(obs_seq, tag_idx, word_idx, start_prob, A, B):
 
     return list(best_path), best_path_prob
 
-def print_prediction(obs_seq, tag_idx, best_path):
-    """
-    Prints tab-separated word and predicted tag
-    Args:
-        obs_seq: list of words in a sentence to be tagged
-        tag_idx: dict with mapping from tag to index
-        best_path: list representing tags in most probable path
-
-    Returns:
-        None
-    """
-    tag_dict = {v: k for k, v in tag_idx.items()}
-    for i, e in enumerate(obs_seq):
-        print('\t'.join([e, tag_dict[best_path[i]]]))
-
 
 
