@@ -1,0 +1,13 @@
+Nancy Wen 
+nw1334
+
+HMM POS Tagger 
+
+1. I trained my HMM POS Tagger on the training corpus (WSJ_02-21.pos) and then I ran my HMM POS Tagger on the development corpus (WSJ_24.words). I evaluated the performance of my tagger using the provided scoring function. 
+
+31047 out of 32853 tags correct
+  accuracy: 94.502785
+
+2. My code is available on github: https://github.com/nancywen25/HMM_POS_Tagger
+
+3. The test data output is available here: https://github.com/nancywen25/HMM_POS_Tagger/blob/master/output/WSJ_23.pos
