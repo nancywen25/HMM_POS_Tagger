@@ -1,4 +1,7 @@
 import numpy as np
+import itertools
+from train_hmm import read_data, get_transition_probs, get_emission_probs
+from scoring import score
 
 def lookup_emission_prob(word, tag_idx, word_idx, B, state=None):
     """
@@ -68,6 +71,54 @@ def run_viterbi(obs_seq, tag_idx, word_idx, start_prob, A, B):
         best_path[i-1] = backpointer[best_path[i], i]
 
     return list(best_path), best_path_prob
+
+def print_prediction(obs_seq, tag_idx, best_path, fname, trace=False):
+    """
+    Writes tab-separated word and predicted tag to file for a sequence of observations
+    Args:
+        obs_seq: list of words in a sentence to be tagged
+        tag_idx: dict with mapping from tag to index
+        best_path: list representing tags in most probable path
+        fname: path of file to write to
+        trace: flag whether to print out rows written to file
+    Returns:
+        None
+    """
+    tag_dict = {v: k for k, v in tag_idx.items()}
+    with open(fname, 'a') as f:
+        for i, e in enumerate(obs_seq):
+            f.write('\t'.join([e, tag_dict[best_path[i]]]))
+            f.write('\n')
+            if trace:
+                print('\t'.join([e, tag_dict[best_path[i]]]))
+        f.write('\n') # add a new line for end of sentence
+
+def main():
+    training_fname = "WSJ_POS_CORPUS_FOR_STUDENTS/WSJ_02-21.pos"
+    lines, tag_idx, word_idx = read_data(training_fname)
+    start_prob, A = get_transition_probs(lines, tag_idx)
+    B = get_emission_probs(lines, tag_idx, word_idx)
+
+    develop_fname = "WSJ_POS_CORPUS_FOR_STUDENTS/WSJ_24.words"
+    with open(develop_fname, 'r') as f:
+        lines = [line.strip() for line in f]
+
+    # split the list into lists of sentences
+    sentences = [list(v) for k, v in itertools.groupby(lines, key=bool) if k]
+
+    # specify output file name and clear out file
+    predict_fname = "output/WSJ_24.pos"
+    open(predict_fname, 'w').close()
+
+    # generate predictions for all sentences
+    for i, sentence in enumerate(sentences):
+        best_path, bestpath_prob = run_viterbi(sentence, tag_idx, word_idx, start_prob, A, B)
+        print_prediction(sentence, tag_idx, best_path, predict_fname)
+
+    score('WSJ_POS_CORPUS_FOR_STUDENTS/WSJ_24.pos', 'output/WSJ_24.pos')
+
+if __name__=='__main__':
+    main()
 
 
 
