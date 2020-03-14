@@ -1,5 +1,6 @@
 import numpy as np
 import itertools
+import argparse
 from train_hmm import read_data, get_transition_probs, get_emission_probs
 from scoring import score
 
@@ -93,32 +94,42 @@ def print_prediction(obs_seq, tag_idx, best_path, fname, trace=False):
                 print('\t'.join([e, tag_dict[best_path[i]]]))
         f.write('\n') # add a new line for end of sentence
 
-def main():
+def main(input, output, truth=None):
+    # train HMM
     training_fname = "WSJ_POS_CORPUS_FOR_STUDENTS/WSJ_02-21.pos"
     lines, tag_idx, word_idx = read_data(training_fname)
     start_prob, A = get_transition_probs(lines, tag_idx)
     B = get_emission_probs(lines, tag_idx, word_idx)
 
-    develop_fname = "WSJ_POS_CORPUS_FOR_STUDENTS/WSJ_24.words"
-    with open(develop_fname, 'r') as f:
+    # open file containing input sequence
+    with open(input, 'r') as f:
         lines = [line.strip() for line in f]
 
     # split the list into lists of sentences
     sentences = [list(v) for k, v in itertools.groupby(lines, key=bool) if k]
 
-    # specify output file name and clear out file
-    predict_fname = "output/WSJ_24.pos"
-    open(predict_fname, 'w').close()
+    # clear out output file
+    open(output, 'w').close()
 
     # generate predictions for all sentences
     for i, sentence in enumerate(sentences):
         best_path, bestpath_prob = run_viterbi(sentence, tag_idx, word_idx, start_prob, A, B)
-        print_prediction(sentence, tag_idx, best_path, predict_fname)
+        print_prediction(sentence, tag_idx, best_path, output)
 
-    score('WSJ_POS_CORPUS_FOR_STUDENTS/WSJ_24.pos', 'output/WSJ_24.pos')
+    if truth:
+        score(truth, output) # prints out accuracy of output predictions compared to truth
 
-if __name__=='__main__':
-    main()
+if __name__== '__main__':
+    parser = argparse.ArgumentParser(prog='hmm_parser',
+                                     description='Tag word in input file with part-of-speech')
+    parser.add_argument('-i', '--input', type=str, default="WSJ_POS_CORPUS_FOR_STUDENTS/WSJ_24.words")
+    parser.add_argument('-o', '--output', type=str, default="output/WSJ_24.pos")
+    parser.add_argument('-t', '--truth', type=str)
+    args = parser.parse_args()
+    if args.truth:
+        main(args.input, args.output, args.truth)
+    else:
+        main(args.input, args.output)
 
 
 
